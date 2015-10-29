@@ -84,7 +84,7 @@ public class Main {
 							if (json == null) {
 								continue;
 							}
-							int responseStatus = json.getInt("json");
+							int responseStatus = json.getInt("responseStatus");
 							if (responseStatus == 200) {
 								PrintWriter writer = new PrintWriter(dirName
 										+ "/" + NED[l] + "_" + TOPICSDes[i]
