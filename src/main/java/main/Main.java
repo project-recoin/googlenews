@@ -45,6 +45,7 @@ public class Main {
 	public static final int rsz = 8;
 	public static final int Start = 8;
 	public static final String dirName = "googleNews";
+	public static int GlobalErrorCounter = 0;
 
 	public static void usage() {
 
@@ -66,7 +67,7 @@ public class Main {
 			for (int l = 0; l < NED.length; l++) {
 				String urlWithCountryParam = urlWithIntialParams + "&ned="
 						+ NED[l];
-				for (int i = 0; i < TOPICS.length; i++) {
+				topicLoop: for (int i = 0; i < TOPICS.length; i++) {
 					String urlWithTopicParam = urlWithCountryParam + "&topic="
 							+ TOPICS[i];
 					for (int j = 0; j < Start * ResultLimit; j += ResultLimit) {
@@ -77,9 +78,16 @@ public class Main {
 							if (counterToExitLoop > 5) {
 								System.out
 										.println("403 error is being encountered 5 times");
-								System.out.println("Exiting the crawler");
-								System.exit(1);
-
+								if (GlobalErrorCounter < 10) {
+									GlobalErrorCounter++;
+									System.out.println("chainging the topic!");
+									break topicLoop;
+								} else {
+									System.out
+											.println("Keep getting the error!");
+									System.out.println("Exiting the crawler");
+									System.exit(1);
+								}
 							}
 							JSONObject json = runJson(urlWithPageParam);
 							if (json == null) {
@@ -87,6 +95,9 @@ public class Main {
 							}
 							int responseStatus = json.getInt("responseStatus");
 							if (responseStatus == 200) {
+								// Reset the global error to 0 which means the
+								// crawler is back to work normally!
+								GlobalErrorCounter = 0;
 								PrintWriter writer = new PrintWriter(dirName
 										+ "/" + NED[l] + "_" + TOPICSDes[i]
 										+ "_" + ((j / 8) + 1) + "_" + ".json",
