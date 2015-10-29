@@ -37,8 +37,9 @@ public class Main {
 			"es_cl", "es_co", "es_cu", "es_us", "es_mx", "es_pe", "us", "es_ve" };
 
 	public static final String version = "1.0";
-	public static String userip = "80.44.198.119";
-	// public static String userip = "152.78.65.193";
+	public static String userip = "80.44.198.119";// imac
+	// public static String userip = "152.78.189.48";//sociam
+	// public static String userip = "152.78.65.193"; //macbook
 
 	public static final int ResultLimit = 8;
 	public static final int rsz = 8;
