@@ -1,11 +1,18 @@
 package main;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.HashSet;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,6 +39,7 @@ public class Main {
 	public static final int ResultLimit = 8;
 	public static final int rsz = 8;
 	public static final int Start = 8;
+	public static final String dirName = "googleNews";
 
 	public static void usage() {
 
@@ -46,22 +54,43 @@ public class Main {
 		urlWithParams.append("v=" + version);
 		urlWithParams.append("&userip=" + userip);
 		urlWithParams.append("&rsz=" + rsz);
+		File file = new File(dirName);
+		file.mkdirs();
 
-		for (int i = 0; i < TOPICS.length; i++) {
-			String urlWithParams1 = urlWithParams + "&topic=" + TOPICS[i];
-			for (int j = 0; j < Start * ResultLimit; j += ResultLimit) {
-				String urlWithParams2 = urlWithParams1 + "&start=" + j;
+		try {
 
-				System.out.println(urlWithParams2);
-				
+			for (int i = 0; i < TOPICS.length; i++) {
+				String urlWithParams1 = urlWithParams + "&topic=" + TOPICS[i];
+				File topicFile = new File(dirName + "/" + TOPICS[i]);
+				topicFile.mkdirs();
+				for (int j = 0; j < Start * ResultLimit; j += ResultLimit) {
+					String urlWithParams2 = urlWithParams1 + "&start=" + j;
 
+					JSONObject json = runJson(urlWithParams2);
+					if (json == null) {
+						continue;
+					}
+					PrintWriter writer = new PrintWriter(dirName + "/"
+							+ TOPICS[i] + "/" + j + ".json", "UTF-8");
+					writer.println(json.toString());
+					writer.close();
+
+				}
 			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 	}
 
 	public static JSONObject runJson(String stringurl) {
 		JSONObject json = null;
+
+		HashSet<String> hashUrl = new HashSet<String>();
+		ArrayList<String> arrayUrl = new ArrayList<String>();
 
 		try {
 
@@ -77,6 +106,13 @@ public class Main {
 			}
 
 			json = new JSONObject(builder.toString());
+			JSONArray urlFromJson = json.getJSONArray("results");
+			for (int n = 0; n < urlFromJson.length(); n++) {
+				JSONObject object = urlFromJson.getJSONObject(n);
+				System.out.println(object.get("url"));
+				// do some stuff....
+			}
+			System.out.println(urlFromJson);
 
 		} catch (IOException e) {
 			e.printStackTrace();
