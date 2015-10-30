@@ -37,8 +37,8 @@ public class Main {
 			"es_cl", "es_co", "es_cu", "es_us", "es_mx", "es_pe", "us", "es_ve" };
 
 	public static final String version = "1.0";
-	public static String userip = "80.44.198.119";// imac
-	// public static String userip = "152.78.189.48";//sociam
+	// public static String userip = "80.44.198.119";// imac
+	public static String userip = "152.78.189.48";// sociam
 	// public static String userip = "152.78.65.193"; //macbook
 
 	public static final int ResultLimit = 8;
@@ -67,10 +67,10 @@ public class Main {
 			for (int l = 0; l < NED.length; l++) {
 				String urlWithCountryParam = urlWithIntialParams + "&ned="
 						+ NED[l];
-				topicLoop: for (int i = 0; i < TOPICS.length; i++) {
+				for (int i = 0; i < TOPICS.length; i++) {
 					String urlWithTopicParam = urlWithCountryParam + "&topic="
 							+ TOPICS[i];
-					for (int j = 0; j < Start * ResultLimit; j += ResultLimit) {
+					topicLoop: for (int j = 0; j < Start * ResultLimit; j += ResultLimit) {
 						String urlWithPageParam = urlWithTopicParam + "&start="
 								+ j;
 						int counterToExitLoop = 0;
@@ -98,6 +98,9 @@ public class Main {
 								// Reset the global error to 0 which means the
 								// crawler is back to work normally!
 								GlobalErrorCounter = 0;
+								System.out.println("Processed " + NED[l] + "_"
+										+ TOPICSDes[i] + "_" + ((j / 8) + 1)
+										+ "_" + ".json");
 								PrintWriter writer = new PrintWriter(dirName
 										+ "/" + NED[l] + "_" + TOPICSDes[i]
 										+ "_" + ((j / 8) + 1) + "_" + ".json",
@@ -114,7 +117,7 @@ public class Main {
 												+ TOPICSDes[i]
 												+ "_" + ((j / 8) + 1));
 								counterToExitLoop++;
-								Thread.sleep(3600000);
+								Thread.sleep(300000);
 
 							}
 						}
