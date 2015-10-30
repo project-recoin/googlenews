@@ -78,10 +78,11 @@ public class Main {
 							if (counterToExitLoop > 5) {
 								System.out
 										.println("403 error is being encountered 5 times");
-								if (GlobalErrorCounter < 10) {
+								if (GlobalErrorCounter < 5) {
 									GlobalErrorCounter++;
-									System.out.println("chainging the topic!");
-									break topicLoop;
+									Thread.sleep(3600000);
+									// System.out.println("chainging the topic!");
+									// break topicLoop;
 								} else {
 									System.out
 											.println("Keep getting the error!");
