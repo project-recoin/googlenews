@@ -2,47 +2,52 @@ package test;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.FileReader;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
 
-import org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 public class testJsonIdentation {
 
 	public static void main(String[] args) {
-		String queriesFile = "/Users/user/Eclipse/GoogleNews/googleNews/b/0.json";
-		FileInputStream fis = null;
-		BufferedReader br1 = null;
-		String line1 = null;
-//		File stats = new File("result.txt");
-		JSONObject json = null;
+		String dir = args[0];
+		File folder = new File(dir);
+		File[] listOfFiles = folder.listFiles();
+		File dis = new File(dir + "/filtered");
+		dis.mkdirs();
+		for (File file : listOfFiles) {
+			if (file.isFile()) {
+				if (file.getAbsoluteFile().toString().endsWith(".json")) {
+					try {
+						System.out.println(file.getAbsoluteFile());
+						BufferedReader br = new BufferedReader(new FileReader(
+								file));
+						PrintWriter writer = new PrintWriter(dis + "/"
+								+ file.getName(), "UTF-8");
+						String line;
+						StringBuilder builder = new StringBuilder();
+						while ((line = br.readLine()) != null) {
+							builder.append(line);
 
-		try {
-			fis = new FileInputStream(queriesFile);
-			br1 = new BufferedReader(new InputStreamReader(fis,
-					Charset.forName("UTF-8")));
-//			stats.createNewFile();
-//			PrintWriter pwStats = new PrintWriter(stats);
-			StringBuilder builder = new StringBuilder();
-			while ((line1 = br1.readLine()) != null) {
-				builder.append(line1);
+						}
+						Gson gson = new GsonBuilder().setPrettyPrinting()
+								.create();
+						JsonParser jp = new JsonParser();
+						JsonElement je = jp.parse(builder.toString());
+						String prettyJsonString = gson.toJson(je);
+						writer.println(prettyJsonString);
+
+						br.close();
+						writer.close();
+					} catch (Exception e) {
+					}
+
+				}
 			}
 
-			json = new JSONObject(builder.toString());
-			System.out.println(json);
-			int responseStatus = json.getInt("responseStatus");
-			if (responseStatus == 200) {
-				System.out.println("passed");
-			}
-			// ObjectMapper mapper = new ObjectMapper();
-			// Object indentedJson = mapper.readValue(json, Object.class);
-			// pwStats.pr
-
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 
 	}
