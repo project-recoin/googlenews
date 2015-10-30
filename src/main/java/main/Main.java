@@ -9,10 +9,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.HashSet;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -70,7 +67,8 @@ public class Main {
 				for (int i = 0; i < TOPICS.length; i++) {
 					String urlWithTopicParam = urlWithCountryParam + "&topic="
 							+ TOPICS[i];
-					topicLoop: for (int j = 0; j < Start * ResultLimit; j += ResultLimit) {
+					// topicLoop:
+					for (int j = 0; j < Start * ResultLimit; j += ResultLimit) {
 						String urlWithPageParam = urlWithTopicParam + "&start="
 								+ j;
 						int counterToExitLoop = 0;
@@ -141,9 +139,6 @@ public class Main {
 
 	public static JSONObject runJson(String stringurl) {
 		JSONObject json = null;
-
-		HashSet<String> hashUrl = new HashSet<String>();
-		ArrayList<String> arrayUrl = new ArrayList<String>();
 
 		try {
 
