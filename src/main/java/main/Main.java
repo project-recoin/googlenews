@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Random;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,9 +36,11 @@ public class Main {
 
 	public static final String version = "1.0";
 	// public static String userip = "80.44.198.119";// imac
-	public static String userip = "152.78.189.48";// sociam
-	// public static String userip = "152.78.65.193"; //macbook
+	// public static String userip = "152.78.189.48";// sociam
+	public static String userip = "152.78.65.193"; // macbook
 
+	public static final int maxWait = 50; // In seconds
+	public static final int minWait = 20; // In seconds
 	public static final int ResultLimit = 8;
 	public static final int rsz = 8;
 	public static final int Start = 8;
@@ -88,6 +91,10 @@ public class Main {
 									System.exit(1);
 								}
 							}
+							Random rn = new Random();
+							int randomWait = rn
+									.nextInt((maxWait - minWait) + 1) + minWait;
+							Thread.sleep(randomWait + 1000);
 							JSONObject json = runJson(urlWithPageParam);
 							if (json == null) {
 								continue;
