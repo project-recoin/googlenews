@@ -9,6 +9,8 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Random;
 
 import org.json.JSONException;
@@ -41,6 +43,7 @@ public class Main {
 
 	public static final int maxWait = 50; // In seconds
 	public static final int minWait = 20; // In seconds
+	public static final int wholeProcessIsRepeated = 12; // In hours
 	public static final int ResultLimit = 8;
 	public static final int rsz = 8;
 	public static final int Start = 8;
@@ -60,77 +63,106 @@ public class Main {
 		urlWithIntialParams.append("v=" + version);
 		urlWithIntialParams.append("&userip=" + userip);
 		urlWithIntialParams.append("&rsz=" + rsz);
-		File file = new File(dirName);
-		file.mkdirs();
 
 		try {
-			for (int l = 0; l < NED.length; l++) {
-				String urlWithCountryParam = urlWithIntialParams + "&ned="
-						+ NED[l];
-				for (int i = 0; i < TOPICS.length; i++) {
-					String urlWithTopicParam = urlWithCountryParam + "&topic="
-							+ TOPICS[i];
-					// topicLoop:
-					for (int j = 0; j < Start * ResultLimit; j += ResultLimit) {
-						String urlWithPageParam = urlWithTopicParam + "&start="
-								+ j;
-						int counterToExitLoop = 0;
-						while (true) {
-							if (counterToExitLoop > 5) {
-								System.out
-										.println("403 error is being encountered 5 times");
-								if (GlobalErrorCounter < 5) {
-									GlobalErrorCounter++;
-									Thread.sleep(3600000);
-									// System.out.println("chainging the topic!");
-									// break topicLoop;
-								} else {
+			// Repeat every some hours!! See end of this block
+			while (true) {
+				// upper level counter for waiting a bit more time
+				GlobalErrorCounter = 0;
+				Date date = new Date();
+				// dir is printed with the time and date of creation
+				SimpleDateFormat dateFormat = new SimpleDateFormat(
+						"yyyy-MM-dd_HH-mm-ss");
+				String DirFullName = dirName + dateFormat.format(date);
+				File file = new File(DirFullName);
+				file.mkdirs();
+				// looping through countries and versions
+				for (int l = 0; l < NED.length; l++) {
+					String urlWithCountryParam = urlWithIntialParams + "&ned="
+							+ NED[l];
+					// looping through the 10 topics
+					for (int i = 0; i < TOPICS.length; i++) {
+						String urlWithTopicParam = urlWithCountryParam
+								+ "&topic=" + TOPICS[i];
+						// loop throguh the 8 pages
+						for (int j = 0; j < Start * ResultLimit; j += ResultLimit) {
+							String urlWithPageParam = urlWithTopicParam
+									+ "&start=" + j;
+							// inner counter level
+							int counterToExitLoop = 0;
+							// doing the same request over until it passed or
+							// countenue failong
+							// and therefore exiting the app
+							while (true) {
+								if (counterToExitLoop > 5) {
 									System.out
-											.println("Keep getting the error!");
-									System.out.println("Exiting the crawler");
-									System.exit(1);
+											.println("403 error is being encountered 5 times");
+									if (GlobalErrorCounter < 5) {
+										GlobalErrorCounter++;
+										Thread.sleep(3600000);
+										// System.out.println("chainging the topic!");
+										// break topicLoop;
+									} else {
+										System.out
+												.println("Keep getting the error!");
+										System.out
+												.println("Exiting the crawler");
+										System.exit(1);
+									}
+								}
+								// time between reqests is randomised between
+								// max and min time
+								Random rn = new Random();
+								int randomWait = rn
+										.nextInt((maxWait - minWait) + 1)
+										+ minWait;
+								Thread.sleep(randomWait + 1000);
+								JSONObject json = runJson(urlWithPageParam);
+								if (json == null) {
+									continue;
+								}
+								int responseStatus = json
+										.getInt("responseStatus");
+								if (responseStatus == 200) {
+									// Reset the global error to 0 which means
+									// the
+									// crawler is back to work normally!
+									GlobalErrorCounter = 0;
+									System.out.println("Processed " + NED[l]
+											+ "_" + TOPICSDes[i] + "_"
+											+ ((j / 8) + 1) + "_" + ".json");
+									PrintWriter writer = new PrintWriter(
+											DirFullName + "/" + NED[l] + "_"
+													+ TOPICSDes[i] + "_"
+													+ ((j / 8) + 1) + "_"
+													+ ".json", "UTF-8");
+									writer.println(json.toString());
+									writer.close();
+									break;
+									// if Suspected Terms of Service Abuse
+								} else if (responseStatus == 403) {
+									System.out
+											.println("403 error is encountered with "
+													+ NED[l]
+													+ "_"
+													+ TOPICSDes[i]
+													+ "_"
+													+ ((j / 8) + 1));
+									counterToExitLoop++;
+									Thread.sleep(300000);
+
 								}
 							}
-							Random rn = new Random();
-							int randomWait = rn
-									.nextInt((maxWait - minWait) + 1) + minWait;
-							Thread.sleep(randomWait + 1000);
-							JSONObject json = runJson(urlWithPageParam);
-							if (json == null) {
-								continue;
-							}
-							int responseStatus = json.getInt("responseStatus");
-							if (responseStatus == 200) {
-								// Reset the global error to 0 which means the
-								// crawler is back to work normally!
-								GlobalErrorCounter = 0;
-								System.out.println("Processed " + NED[l] + "_"
-										+ TOPICSDes[i] + "_" + ((j / 8) + 1)
-										+ "_" + ".json");
-								PrintWriter writer = new PrintWriter(dirName
-										+ "/" + NED[l] + "_" + TOPICSDes[i]
-										+ "_" + ((j / 8) + 1) + "_" + ".json",
-										"UTF-8");
-								writer.println(json.toString());
-								writer.close();
-								break;
-								// if Suspected Terms of Service Abuse
-							} else if (responseStatus == 403) {
-								System.out
-										.println("403 error is encountered with "
-												+ NED[l]
-												+ "_"
-												+ TOPICSDes[i]
-												+ "_" + ((j / 8) + 1));
-								counterToExitLoop++;
-								Thread.sleep(300000);
 
-							}
 						}
-
 					}
+
 				}
 
+				System.out.println("Sleeping for " + wholeProcessIsRepeated
+						+ " Hours");
+				System.out.println("Leave me alone (*!*)");
+				Thread.sleep(wholeProcessIsRepeated * 60 * 60 * 1000);
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
