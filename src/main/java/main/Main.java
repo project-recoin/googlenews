@@ -37,9 +37,7 @@ public class Main {
 			"es_cl", "es_co", "es_cu", "es_us", "es_mx", "es_pe", "us", "es_ve" };
 
 	public static final String version = "1.0";
-	// public static String userip = "80.44.198.119";// imac
-	// public static String userip = "152.78.189.48";// sociam
-	public static String userip = "152.78.65.193"; // macbook
+	public static String userip;
 
 	public static final int maxWait = 50; // In seconds
 	public static final int minWait = 20; // In seconds
@@ -51,12 +49,19 @@ public class Main {
 	public static int GlobalErrorCounter = 0;
 
 	public static void usage() {
-
-		System.out.println("");
-		System.out.println("");
+		System.out
+				.println("The program accepts only one arg which is the IP address");
+		System.out.println("java IP address");
 	}
 
 	public static void main(String[] args) {
+
+		if (args.length != 1) {
+			usage();
+			System.exit(-1);
+		}
+
+		userip = args[0];
 
 		StringBuilder urlWithIntialParams = new StringBuilder();
 		urlWithIntialParams.append(endPoint);
