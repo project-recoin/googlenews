@@ -27,7 +27,7 @@ public class Parser {
 		Gson gson = new Gson();
 		Type listType = new TypeToken<NewsHolder>() {
 		}.getType();
-		String dir = "/Users/user/googlenews/data/googleNewsOld2/";
+		String dir = "/Users/user/Eclipse/GoogleNews/recoinServer/googlenews4/googleNews2015-11-12_13-13-33/";
 
 		File folder = new File(dir);
 		PrintWriter writer = null;
