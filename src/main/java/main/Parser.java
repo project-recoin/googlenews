@@ -27,7 +27,7 @@ public class Parser {
 		Gson gson = new Gson();
 		Type listType = new TypeToken<NewsHolder>() {
 		}.getType();
-		String dir = "/Users/user/googlenews/data/googleNews/";
+		String dir = "/Users/user/googlenews/data/googleNewsOld2/";
 
 		File folder = new File(dir);
 		PrintWriter writer = null;
@@ -57,32 +57,38 @@ public class Parser {
 				NewsHolder newsHolder;
 				newsHolder = gson.fromJson(requestURi, listType);
 				Gson gson2 = new Gson();
-				List<Result> resultList = newsHolder.getResponseData()
-						.getResults();
-				String topicAndLang = newsHolder.getResponseData().getCursor()
-						.getMoreResultsUrl();
-				Pattern topicPattern = Pattern.compile("&topic=(.)");
-				Pattern langPattern = Pattern.compile("&ned=(.*)&");
-				Matcher topicMatcher = topicPattern.matcher(topicAndLang);
-				String foundTopic = null;
-				String foundLang = null;
-				if (topicMatcher.find()) {
-					foundTopic = topicMatcher.group(1);
-				}
-				Matcher langMatcher = langPattern.matcher(topicAndLang);
-				if (langMatcher.find()) {
-					foundLang = langMatcher.group(1);
-				}
 
-				for (int j = 0; j < resultList.size(); j++) {
-					JsonElement jsonElement = gson
-							.toJsonTree(resultList.get(j));
-					jsonElement.getAsJsonObject().addProperty("topic",
-							foundTopic);
-					jsonElement.getAsJsonObject().addProperty("region",
-							foundLang);
-					System.out.println(gson2.toJson(jsonElement));
-					writer.println(gson2.toJson(jsonElement));
+				if (newsHolder.getResponseStatus() == 200) {
+					List<Result> resultList = newsHolder.getResponseData()
+							.getResults();
+					String topicAndLang = newsHolder.getResponseData()
+							.getCursor().getMoreResultsUrl();
+					Pattern topicPattern = Pattern.compile("&topic=(.)");
+					Pattern langPattern = Pattern.compile("&ned=(.*)&");
+					Matcher topicMatcher = topicPattern.matcher(topicAndLang);
+					String foundTopic = null;
+					String foundLang = null;
+					if (topicMatcher.find()) {
+						foundTopic = topicMatcher.group(1);
+					}
+					Matcher langMatcher = langPattern.matcher(topicAndLang);
+					if (langMatcher.find()) {
+						foundLang = langMatcher.group(1);
+					}
+
+					for (int j = 0; j < resultList.size(); j++) {
+						JsonElement jsonElement = gson.toJsonTree(resultList
+								.get(j));
+						jsonElement.getAsJsonObject().addProperty("topic",
+								foundTopic);
+						jsonElement.getAsJsonObject().addProperty("region",
+								foundLang);
+						System.out.println(gson2.toJson(jsonElement));
+						writer.println(gson2.toJson(jsonElement));
+					}
+				} else {
+					System.err.println("File has bad response "
+							+ listOfFiles[i].getAbsoluteFile());
 				}
 
 			} else {
