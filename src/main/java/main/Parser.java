@@ -1,14 +1,21 @@
 package main;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
 import dataObject.NewsHolder;
@@ -20,19 +27,67 @@ public class Parser {
 		Gson gson = new Gson();
 		Type listType = new TypeToken<NewsHolder>() {
 		}.getType();
-		String file = "/Users/user/Eclipse/GoogleNews/googleNews/ar_ae_business_1_.json";
-		String requestURi = null;
+		String dir = "/Users/user/googlenews/data/googleNews/";
+
+		File folder = new File(dir);
+		PrintWriter writer = null;
 		try {
-			requestURi = readFile(file, StandardCharsets.UTF_8);
-		} catch (IOException e) {
+			writer = new PrintWriter(new FileOutputStream(new File(
+					folder.getParent() + "/AllJson.json"), true));
+		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e1.printStackTrace();
 		}
-		NewsHolder newsHolder;
-		newsHolder = gson.fromJson(requestURi, listType);
-		List<Result> resultList = newsHolder.getResponseData().getResults();
-		for (int i = 0; i < resultList.size(); i++) {
-			System.out.println(resultList.get(i).getTitle());
+		File[] listOfFiles = folder.listFiles();
+		for (int i = 0; i < listOfFiles.length; i++) {
+			if (listOfFiles[i].isFile()
+					&& listOfFiles[i].getAbsoluteFile().toString()
+							.endsWith("json")) {
+				System.out.println("File " + listOfFiles[i].getName());
+				String fileName = listOfFiles[i].getName();
+
+				String requestURi = null;
+				try {
+					requestURi = readFile(dir + fileName,
+							StandardCharsets.UTF_8);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				NewsHolder newsHolder;
+				newsHolder = gson.fromJson(requestURi, listType);
+				Gson gson2 = new Gson();
+				List<Result> resultList = newsHolder.getResponseData()
+						.getResults();
+				String topicAndLang = newsHolder.getResponseData().getCursor()
+						.getMoreResultsUrl();
+				Pattern topicPattern = Pattern.compile("&topic=(.)");
+				Pattern langPattern = Pattern.compile("&ned=(.*)&");
+				Matcher topicMatcher = topicPattern.matcher(topicAndLang);
+				String foundTopic = null;
+				String foundLang = null;
+				if (topicMatcher.find()) {
+					foundTopic = topicMatcher.group(1);
+				}
+				Matcher langMatcher = langPattern.matcher(topicAndLang);
+				if (langMatcher.find()) {
+					foundLang = langMatcher.group(1);
+				}
+
+				for (int j = 0; j < resultList.size(); j++) {
+					JsonElement jsonElement = gson
+							.toJsonTree(resultList.get(j));
+					jsonElement.getAsJsonObject().addProperty("topic",
+							foundTopic);
+					jsonElement.getAsJsonObject().addProperty("region",
+							foundLang);
+					System.out.println(gson2.toJson(jsonElement));
+					writer.println(gson2.toJson(jsonElement));
+				}
+
+			} else {
+				System.err.println("file has issues " + listOfFiles[i]);
+			}
 		}
 
 	}
