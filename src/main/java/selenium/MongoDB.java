@@ -9,40 +9,115 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bson.Document;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
 
-public class Main {
+import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoDatabase;
+
+public class MongoDB {
 	static final DateFormat df = new SimpleDateFormat(
 			"EEE, d MMM yyyy HH:mm:ss Z");
 	static final DateFormat googleDateStyle = new SimpleDateFormat(
 			"MMM dd, yyyy");
+	static final String ArticleXpath = ".//td[@class='esc-layout-article-cell']";
 	static final String titleXpath = ".//div[@class='esc-lead-article-title-wrapper']/h2[@class='esc-lead-article-title']/a/span[@class='titletext']";
 	static final String titleUrlXpath = ".//div[@class='esc-lead-article-title-wrapper']/h2[@class='esc-lead-article-title']/a";
 	static final String contentXpath = ".//div[@class='esc-lead-snippet-wrapper']";
 	static final String publisherXpath = ".//div[@class='esc-lead-article-source-wrapper']/table[@class='al-attribution single-line-height']/tbody/tr/td[@class='al-attribution-cell source-cell']";
 	static final String publishedDateXpath = ".//div[@class='esc-lead-article-source-wrapper']/table[@class='al-attribution single-line-height']/tbody/tr/td[@class='al-attribution-cell timestamp-cell']/span[@class='al-attribution-timestamp']";
 
+	static final String host = "localhost";
+	static final int port = 27017;
+	static final String databaseName = "Syl";
+	static final String collectionName = "seleniumGoogleNews";
+
+	public static final int wholeProcessIsRepeated = 1; // In hours
+
+	public static final String[] TOPICS = { "h", "w", "b", "n", "t", "el", "p",
+			"e", "s", "m" };
+	public static final String[] TOPICSDes = { "headlines", "world",
+			"business", "nation", "technology", "elections", "politics",
+			"entertainment", "sports", "health" };
+	public static final String[] NED = { "uk", "au", "in", "en_il", "en_my",
+			"nz", "en_pk", "en_ph", "en_sg", "en_bw", "en_et", "en_gh",
+			"en_ie", "en_ke", "en_na", "en_ng", "en_za", "en_tz", "en_ug",
+			"en_zw", "ca", "us" };
+
 	public static void main(String[] args) {
+		MongoClient mongoClient = new MongoClient(host, port);
+		MongoDatabase database = mongoClient.getDatabase(databaseName);
+
 		ProfilesIni pr = new ProfilesIni();
 		FirefoxProfile fp = pr.getProfile("SeleniumUser");
 		FirefoxDriver driver = new FirefoxDriver(fp);
-		driver.get("http://news.google.com/news/section?cf=all&ned=au&topic=b");
-		List<WebElement> tds = driver.findElements(By
-				.xpath(".//td[@class='esc-layout-article-cell']"));
-		for (WebElement td : tds) {
-			Article article = getArticle(td);
-			System.out.println("Title: " + article.getTitle());
-			System.out.println("TitleUrl: " + article.getTitleUrl());
-			System.out.println("Content: " + article.getContent());
-			System.out.println("Publisher: " + article.getPublisher());
-			System.out.println("publishedDate: " + article.getPublishedDate());
+		while (true) {
+			for (int j = 0; j < NED.length; j++) {
+				System.out.println("Processing the language " + NED[j]);
+				for (int i = 0; i < TOPICS.length; i++) {
+					System.out.println("Processing the topic " + TOPICS[i]);
+					String url = "http://news.google.com/news/section?cf=all&ned="
+							+ NED[j] + "&topic=" + TOPICS[i];
+					driver.get(url);
+					List<WebElement> tds = driver.findElements(By
+							.xpath(ArticleXpath));
+					for (WebElement td : tds) {
+						try {
+							Article article = getArticle(td);
+							FindIterable<Document> iterable = database
+									.getCollection(collectionName).find(
+											new Document("title", article
+													.getTitle()));
+							if (iterable.first() == null) {
+								database.getCollection(collectionName)
+										.insertOne(
+												new Document()
+														.append("title",
+																article.getTitle())
+														.append("titleUrl",
+																article.getTitleUrl())
+														.append("content",
+																article.getContent())
+														.append("publisher",
+																article.getPublisher())
+														.append("publishedDate",
+																article.getPublishedDate())
+														.append("topic",
+																TOPICSDes[i])
+														.append("NED", NED[i]));
 
+								System.out.println("Title: "
+										+ article.getTitle());
+								System.out.println("TitleUrl: "
+										+ article.getTitleUrl());
+								System.out.println("Content: "
+										+ article.getContent());
+								System.out.println("Publisher: "
+										+ article.getPublisher());
+								System.out.println("publishedDate: "
+										+ article.getPublishedDate());
+							}
+						} catch (Exception e) {
+							System.err.println("Error with " + url);
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			System.out.println("Sleeping for " + wholeProcessIsRepeated
+					+ " Hours");
+			System.out.println("Leave me alone (*!*)");
+			try {
+				Thread.sleep(wholeProcessIsRepeated * 60 * 60 * 1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
-
 	}
 
 	public static Article getArticle(WebElement td) {

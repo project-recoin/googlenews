@@ -33,7 +33,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>main.Main</mainClass>
+							<mainClass>selenium.MongoDB</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
