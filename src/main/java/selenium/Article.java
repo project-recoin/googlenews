@@ -6,6 +6,24 @@ public class Article {
 	private String publisher;
 	private String publishedDate;
 	private String title;
+	private String collectionDate;
+	private String engineSource;
+
+	public String getCollectionDate() {
+		return collectionDate;
+	}
+
+	public void setCollectionDate(String collectionDate) {
+		this.collectionDate = collectionDate;
+	}
+
+	public String getEngineSource() {
+		return engineSource;
+	}
+
+	public void setEngineSource(String engineSource) {
+		this.engineSource = engineSource;
+	}
 
 	public String getTitle() {
 		return title;
