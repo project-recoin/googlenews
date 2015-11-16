@@ -91,16 +91,6 @@ public class MongoDB {
 																TOPICSDes[i])
 														.append("NED", NED[i]));
 
-								System.out.println("Title: "
-										+ article.getTitle());
-								System.out.println("TitleUrl: "
-										+ article.getTitleUrl());
-								System.out.println("Content: "
-										+ article.getContent());
-								System.out.println("Publisher: "
-										+ article.getPublisher());
-								System.out.println("publishedDate: "
-										+ article.getPublishedDate());
 							}
 						} catch (Exception e) {
 							System.err.println("Error with " + url);
