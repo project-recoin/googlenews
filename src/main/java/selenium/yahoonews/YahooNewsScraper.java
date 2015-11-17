@@ -23,7 +23,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 
 public class YahooNewsScraper {
-	static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+	static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	static final DateFormat yahooDateStyle = new SimpleDateFormat(
 			"yyyy-MM-dd'T'hh:mm:ss'Z'");
 	static final String ArticleXpath = ".//div[@class='txt']";
@@ -180,61 +180,71 @@ public class YahooNewsScraper {
 
 	public static Date fromTimeAgoToDate(String timeAgo) {
 		Date convertedDate = null;
-		if (timeAgo.contains("ago")) {
-			Pattern patter = Pattern.compile("([0-9]+) ([a-zA-Z]+) ago");
-			Matcher matcher = patter.matcher(timeAgo);
-			String timeNumber = null;
-			String timeUnit = null;
-			if (matcher.find()) {
-				timeNumber = matcher.group(1);
-				timeUnit = matcher.group(2);
-			}
 
-			if (timeNumber != null && timeUnit != null) {
-				Date currentDate = new Date();
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(currentDate);
+		ParsePosition p = new ParsePosition(0);
+		convertedDate = yahooDateStyle.parse(timeAgo, p);
 
-				if (timeUnit.contains("second")) {
-					cal.add(Calendar.SECOND, Integer.valueOf("-" + timeNumber));
-					convertedDate = cal.getTime();
-				} else if (timeUnit.contains("min")) {
-					cal.add(Calendar.MINUTE, Integer.valueOf("-" + timeNumber));
-					convertedDate = cal.getTime();
-
-				} else if (timeUnit.contains("hour")) {
-					cal.add(Calendar.HOUR, Integer.valueOf("-" + timeNumber));
-					convertedDate = cal.getTime();
-
-				} else if (timeUnit.contains("day")) {
-					cal.add(Calendar.DAY_OF_MONTH,
-							Integer.valueOf("-" + timeNumber));
-					convertedDate = cal.getTime();
-
-				} else if (timeUnit.contains("week")) {
-					cal.add(Calendar.WEEK_OF_MONTH,
-							Integer.valueOf("-" + timeNumber));
-					convertedDate = cal.getTime();
-
-				} else if (timeUnit.contains("month")) {
-					cal.add(Calendar.MONTH, Integer.valueOf("-" + timeNumber));
-					convertedDate = cal.getTime();
-
-				} else if (timeUnit.contains("year")) {
-					cal.add(Calendar.YEAR, Integer.valueOf("-" + timeNumber));
-					convertedDate = cal.getTime();
-
-				}
-
-			}
-		} else {
-
-			ParsePosition p = new ParsePosition(0);
-			convertedDate = yahooDateStyle.parse(timeAgo, p);
-
-		}
 		return convertedDate;
 
 	}
+
+	// public static Date fromTimeAgoToDate(String timeAgo) {
+	// Date convertedDate = null;
+	// if (timeAgo.contains("ago")) {
+	// Pattern patter = Pattern.compile("([0-9]+) ([a-zA-Z]+) ago");
+	// Matcher matcher = patter.matcher(timeAgo);
+	// String timeNumber = null;
+	// String timeUnit = null;
+	// if (matcher.find()) {
+	// timeNumber = matcher.group(1);
+	// timeUnit = matcher.group(2);
+	// }
+	//
+	// if (timeNumber != null && timeUnit != null) {
+	// Date currentDate = new Date();
+	// Calendar cal = Calendar.getInstance();
+	// cal.setTime(currentDate);
+	//
+	// if (timeUnit.contains("second")) {
+	// cal.add(Calendar.SECOND, Integer.valueOf("-" + timeNumber));
+	// convertedDate = cal.getTime();
+	// } else if (timeUnit.contains("min")) {
+	// cal.add(Calendar.MINUTE, Integer.valueOf("-" + timeNumber));
+	// convertedDate = cal.getTime();
+	//
+	// } else if (timeUnit.contains("hour")) {
+	// cal.add(Calendar.HOUR, Integer.valueOf("-" + timeNumber));
+	// convertedDate = cal.getTime();
+	//
+	// } else if (timeUnit.contains("day")) {
+	// cal.add(Calendar.DAY_OF_MONTH,
+	// Integer.valueOf("-" + timeNumber));
+	// convertedDate = cal.getTime();
+	//
+	// } else if (timeUnit.contains("week")) {
+	// cal.add(Calendar.WEEK_OF_MONTH,
+	// Integer.valueOf("-" + timeNumber));
+	// convertedDate = cal.getTime();
+	//
+	// } else if (timeUnit.contains("month")) {
+	// cal.add(Calendar.MONTH, Integer.valueOf("-" + timeNumber));
+	// convertedDate = cal.getTime();
+	//
+	// } else if (timeUnit.contains("year")) {
+	// cal.add(Calendar.YEAR, Integer.valueOf("-" + timeNumber));
+	// convertedDate = cal.getTime();
+	//
+	// }
+	//
+	// }
+	// } else {
+	//
+	// ParsePosition p = new ParsePosition(0);
+	// convertedDate = yahooDateStyle.parse(timeAgo, p);
+	//
+	// }
+	// return convertedDate;
+	//
+	// }
 
 }
