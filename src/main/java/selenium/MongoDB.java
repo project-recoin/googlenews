@@ -21,8 +21,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 
 public class MongoDB {
-	static final DateFormat df = new SimpleDateFormat(
-			"EEE, d MMM yyyy HH:mm:ss Z");
+	static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	static final DateFormat googleDateStyle = new SimpleDateFormat(
 			"MMM dd, yyyy");
 	static final String ArticleXpath = ".//td[@class='esc-layout-article-cell']";
@@ -31,6 +30,8 @@ public class MongoDB {
 	static final String contentXpath = ".//div[@class='esc-lead-snippet-wrapper']";
 	static final String publisherXpath = ".//div[@class='esc-lead-article-source-wrapper']/table[@class='al-attribution single-line-height']/tbody/tr/td[@class='al-attribution-cell source-cell']";
 	static final String publishedDateXpath = ".//div[@class='esc-lead-article-source-wrapper']/table[@class='al-attribution single-line-height']/tbody/tr/td[@class='al-attribution-cell timestamp-cell']/span[@class='al-attribution-timestamp']";
+
+	static final String engineSource = "yahooNews";
 
 	static final String host = "localhost";
 	static final int port = 27017;
@@ -125,6 +126,9 @@ public class MongoDB {
 		article.setPublisher(publisher.get(0).getText());
 		article.setPublishedDate(df.format(fromTimeAgoToDate(publishedDate.get(
 				0).getText())));
+		article.setEngineSource(engineSource);
+		Date currentDate = new Date();
+		article.setCollectionDate(df.format(currentDate));
 
 		return article;
 	}

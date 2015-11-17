@@ -33,7 +33,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>selenium.yahoonews.YahooNewsScraper</mainClass>
+							<mainClass>selenium.MongoDB</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
