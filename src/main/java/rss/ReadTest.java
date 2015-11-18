@@ -11,28 +11,6 @@ import java.util.Scanner;
 
 public class ReadTest {
 	public static void main(String[] args) {
-		// try {
-		//
-		// String content = "This is the content to write into file";
-		//
-		// File file = new File("/Users/user/googlenews/rss/errorRss.txt");
-		//
-		// // if file doesnt exists, then create it
-		// if (!file.exists()) {
-		// file.createNewFile();
-		// }
-		//
-		// FileWriter fw = new FileWriter(file.getAbsoluteFile());
-		// BufferedWriter bw = new BufferedWriter(fw);
-		// bw.write(content);
-		// bw.close();
-		//
-		// System.out.println("Done");
-		//
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-		// }
 
 		try {
 
@@ -66,8 +44,13 @@ public class ReadTest {
 			while (iter.hasNext()) {
 				String url = iter.next();
 				// System.out.println(url);
-				RSSFeedParser parser = new RSSFeedParser(url);
-				Feed feed = parser.readFeed();
+				Feed feed = null;
+				try {
+					RSSFeedParser parser = new RSSFeedParser(url);
+					feed = parser.readFeed();
+				} catch (Exception e) {
+					System.err.println("rss url is not parsed " + url);
+				}
 				if (feed == null) {
 					errorfileBuffer.write(url);
 					errorfileBuffer.newLine();
@@ -83,7 +66,6 @@ public class ReadTest {
 			workingfileBuffer.close();
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
