@@ -1,33 +1,69 @@
 package rss;
 
-import java.io.BufferedWriter;
 import java.io.File;
+
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Set;
-
-import org.apache.commons.io.FileUtils;
+import java.util.Scanner;
 
 public class ReadTest {
 	public static void main(String[] args) {
-		Set<String> lines = null;
-		File stats = new File("/Users/user/googlenews/rss/errorRss.txt");
-		File stats2 = new File("/Users/user/googlenews/rss/workingRss.txt");
+		// try {
+		//
+		// String content = "This is the content to write into file";
+		//
+		// File file = new File("/Users/user/googlenews/rss/errorRss.txt");
+		//
+		// // if file doesnt exists, then create it
+		// if (!file.exists()) {
+		// file.createNewFile();
+		// }
+		//
+		// FileWriter fw = new FileWriter(file.getAbsoluteFile());
+		// BufferedWriter bw = new BufferedWriter(fw);
+		// bw.write(content);
+		// bw.close();
+		//
+		// System.out.println("Done");
+		//
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
+		// }
 
-		PrintWriter errorRss = null;
-		PrintWriter workingRss = null;
 		try {
-			stats.createNewFile();
-			stats2.createNewFile();
-			errorRss = new PrintWriter(stats);
-			workingRss = new PrintWriter(stats2);
 
-			lines = new HashSet<String>(FileUtils.readLines(new File(
-					"/Users/user/googlenews/rss/allRss.txt")));
-			Iterator<String> iter = lines.iterator();
+			File errorfile = new File("/Users/user/googlenews/rss/errorRss.txt");
+			File workingfile = new File(
+					"/Users/user/googlenews/rss/workingRss.txt");
+
+			if (!errorfile.exists()) {
+				errorfile.createNewFile();
+			}
+			if (!workingfile.exists()) {
+				workingfile.createNewFile();
+			}
+			FileWriter errorfileWriter = new FileWriter(
+					errorfile.getAbsoluteFile());
+			FileWriter workingfileWriter = new FileWriter(
+					workingfile.getAbsoluteFile());
+			BufferedWriter errorfileBuffer = new BufferedWriter(errorfileWriter);
+			BufferedWriter workingfileBuffer = new BufferedWriter(
+					workingfileWriter);
+
+			Scanner s = new Scanner(new File(
+					"/Users/user/googlenews/rss/allRss.txt"));
+			ArrayList<String> list = new ArrayList<String>();
+			while (s.hasNext()) {
+				list.add(s.next());
+			}
+			s.close();
+			System.out.println("list is " + list.size());
+
+			Iterator<String> iter = list.iterator();
 			while (iter.hasNext()) {
 				String url = iter.next();
 				System.out.println(url);
@@ -35,20 +71,19 @@ public class ReadTest {
 				Feed feed = parser.readFeed();
 				if (feed == null) {
 					System.err.println("error");
-					errorRss.println(url);
+					errorfileBuffer.write(url);
 
 				} else {
 					System.out.println("parsed");
-					workingRss.println(url);
+					workingfileBuffer.write(url);
 				}
 			}
+			errorfileBuffer.close();
+			workingfileBuffer.close();
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			errorRss.close();
-			workingRss.close();
 		}
-
 	}
 }
