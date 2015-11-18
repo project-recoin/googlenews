@@ -33,7 +33,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>selenium.MongoDB</mainClass>
+							<mainClass>rss.ReadTest</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
@@ -41,15 +41,15 @@
 					</descriptorRefs>
 				</configuration>
 			</plugin>
-		      <plugin>
-			        <groupId>org.apache.maven.plugins</groupId>
-        				<artifactId>maven-compiler-plugin</artifactId>
-       				 <version>3.3</version>
-     					   <configuration>
- 					         <source>1.7</source>
-					          <target>1.7</target>
-        				</configuration>
-		      </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.3</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
 
 		</plugins>
 	</build>

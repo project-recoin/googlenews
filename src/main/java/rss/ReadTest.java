@@ -36,9 +36,9 @@ public class ReadTest {
 
 		try {
 
-			File errorfile = new File("/Users/user/googlenews/rss/errorRss.txt");
-			File workingfile = new File(
-					"/Users/user/googlenews/rss/workingRss.txt");
+			String path = args[0];
+			File errorfile = new File(path + "errorRss.txt");
+			File workingfile = new File(path + "workingRss.txt");
 
 			if (!errorfile.exists()) {
 				errorfile.createNewFile();
@@ -53,29 +53,31 @@ public class ReadTest {
 			BufferedWriter errorfileBuffer = new BufferedWriter(errorfileWriter);
 			BufferedWriter workingfileBuffer = new BufferedWriter(
 					workingfileWriter);
-
-			Scanner s = new Scanner(new File(
-					"/Users/user/googlenews/rss/allRss.txt"));
+			errorfileBuffer.write("saud");
+			Scanner s = new Scanner(new File(args[1]));
 			ArrayList<String> list = new ArrayList<String>();
 			while (s.hasNext()) {
 				list.add(s.next());
 			}
 			s.close();
+
 			System.out.println("list is " + list.size());
 
 			Iterator<String> iter = list.iterator();
 			while (iter.hasNext()) {
 				String url = iter.next();
-				System.out.println(url);
+				// System.out.println(url);
 				RSSFeedParser parser = new RSSFeedParser(url);
 				Feed feed = parser.readFeed();
 				if (feed == null) {
-					System.err.println("error");
 					errorfileBuffer.write(url);
+					errorfileBuffer.newLine();
+					errorfileBuffer.flush();
 
 				} else {
-					System.out.println("parsed");
 					workingfileBuffer.write(url);
+					workingfileBuffer.newLine();
+					workingfileBuffer.flush();
 				}
 			}
 			errorfileBuffer.close();
