@@ -36,9 +36,8 @@ public class ReadTest {
 
 		try {
 
-			String path = args[0];
-			File errorfile = new File(path + "errorRss.txt");
-			File workingfile = new File(path + "workingRss.txt");
+			File errorfile = new File("errorRss.txt");
+			File workingfile = new File("workingRss.txt");
 
 			if (!errorfile.exists()) {
 				errorfile.createNewFile();
@@ -53,8 +52,7 @@ public class ReadTest {
 			BufferedWriter errorfileBuffer = new BufferedWriter(errorfileWriter);
 			BufferedWriter workingfileBuffer = new BufferedWriter(
 					workingfileWriter);
-			errorfileBuffer.write("saud");
-			Scanner s = new Scanner(new File(args[1]));
+			Scanner s = new Scanner(new File(args[0]));
 			ArrayList<String> list = new ArrayList<String>();
 			while (s.hasNext()) {
 				list.add(s.next());
