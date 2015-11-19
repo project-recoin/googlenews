@@ -1,4 +1,4 @@
-package selenium.yahoonews;
+package selenium;
 
 import java.text.DateFormat;
 import java.text.ParsePosition;
@@ -16,43 +16,42 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
 
-import selenium.Article;
-
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 
-public class YahooNewsScraper {
+public class GoogleNewsScraper {
 	static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	static final DateFormat yahooDateStyle = new SimpleDateFormat(
-			"yyyy-MM-dd'T'hh:mm:ss'Z'");
-	static final String ArticleXpath = ".//li[@class='list-story']";
-	static final String showMoreXpath = ".//div[@class='inline-show-more']/a[@class='rapid-nf more-link']";
+	static final DateFormat googleDateStyle = new SimpleDateFormat(
+			"MMM dd, yyyy");
 
-	static final String titleXpath = ".//div[@class='txt']/a[@class='title ']";
-	static final String titleUrlXpath = ".//div[@class='txt']/a[@class='title ']";
-	static final String contentXpath = ".//div[@class='txt']/p[@class='description']";
-	static final String publisherXpath = ".//div[@class='txt']/cite/span[@class='provider']";
-	static final String publishedDateXpath = ".//div[@class='txt']/cite/abbr";
-	static final String imageUrlXpath = ".//a[@class='thumb']/img";
+	static final String ArticleXpath = ".//div[@class='esc-default-layout-wrapper esc-expandable-wrapper']/table/tbody/tr";
+
+	static final String titleXpath = ".//td[@class='esc-layout-article-cell']/div[@class='esc-lead-article-title-wrapper']/h2[@class='esc-lead-article-title']/a/span[@class='titletext']";
+	static final String titleUrlXpath = ".//td[@class='esc-layout-article-cell']/div[@class='esc-lead-article-title-wrapper']/h2[@class='esc-lead-article-title']/a";
+	static final String contentXpath = ".//td[@class='esc-layout-article-cell']/div[@class='esc-lead-snippet-wrapper']";
+	static final String publisherXpath = ".//td[@class='esc-layout-article-cell']/div[@class='esc-lead-article-source-wrapper']/table[@class='al-attribution single-line-height']/tbody/tr/td[@class='al-attribution-cell source-cell']";
+	static final String publishedDateXpath = ".//td[@class='esc-layout-article-cell']/div[@class='esc-lead-article-source-wrapper']/table[@class='al-attribution single-line-height']/tbody/tr/td[@class='al-attribution-cell timestamp-cell']/span[@class='al-attribution-timestamp']";
+	static final String imageUrlXpath = ".//td[@class='esc-layout-thumbnail-cell']/div/div/div/a/div/img";
+
+	static final String engineSource = "GoogleNewsV1.1";
 
 	static final String host = "localhost";
 	static final int port = 27017;
 	static final String databaseName = "Syl";
-	static final String collectionName = "seleniumYahooNews";
-	static final String engineSource = "yahooNewsV1.1";
+	static final String collectionName = "seleniumGoogleNews";
 
 	public static final int wholeProcessIsRepeated = 1; // In hours
 
-	public static final String[] TOPICS = { "africa", "animals-pets", "asia",
-			"business", "companies", "conservatives", "crime", "culture",
-			"diet-nutrition", "economy", "education", "energy",
-			"entertainment", "environment", "europe", "health", "healthcare",
-			"illnesses-conditions", "industry", "labour", "liberal-democrats",
-			"middle-east", "music", "nature", "oddly-enough", "politics",
-			"reviews", "royal-family", "science", "showbiz", "space", "sports",
-			"stockmarket", "tech", "tv-soap", "uk", "uk-politics", "usa",
-			"usa-politics", "world", "world-politics", "your-money" };
+	public static final String[] TOPICS = { "h", "w", "b", "n", "t", "el", "p",
+			"e", "s", "m" };
+	public static final String[] TOPICSDes = { "headlines", "world",
+			"business", "nation", "technology", "elections", "politics",
+			"entertainment", "sports", "health" };
+	public static final String[] NED = { "uk", "au", "in", "en_il", "en_my",
+			"nz", "en_pk", "en_ph", "en_sg", "en_bw", "en_et", "en_gh",
+			"en_ie", "en_ke", "en_na", "en_ng", "en_za", "en_tz", "en_ug",
+			"en_zw", "ca", "us" };
 
 	public static void main(String[] args) {
 		MongoClient mongoClient = new MongoClient(host, port);
@@ -62,78 +61,65 @@ public class YahooNewsScraper {
 		FirefoxProfile fp = pr.getProfile("SeleniumUser");
 		FirefoxDriver driver = new FirefoxDriver(fp);
 		while (true) {
-			for (int i = 0; i < TOPICS.length; i++) {
-				System.out.println("Processing the topic " + TOPICS[i]);
-				String url = "https://uk.news.yahoo.com/" + TOPICS[i] + "/";
-				driver.get(url);
-				List<WebElement> tds = driver.findElements(By
-						.xpath(ArticleXpath));
-				for (WebElement td : tds) {
-					try {
-						while (true) {
+			for (int j = 0; j < NED.length; j++) {
+				System.out.println("Processing the language " + NED[j]);
+				for (int i = 0; i < TOPICS.length; i++) {
+					System.out.println("Processing the topic " + TOPICS[i]);
+					String url = "http://news.google.com/news/section?cf=all&ned="
+							+ NED[j] + "&topic=" + TOPICS[i];
+					driver.get(url);
+					List<WebElement> tds = driver.findElements(By
+							.xpath(ArticleXpath));
+					for (WebElement td : tds) {
+						try {
+							Article article = getArticle(td);
+							if (article != null) {
+								FindIterable<Document> iterable = database
+										.getCollection(collectionName).find(
+												new Document("title", article
+														.getTitle()).append(
+														"content",
+														article.getContent()));
+								if (iterable.first() == null) {
+									database.getCollection(collectionName)
+											.insertOne(
+													new Document()
+															.append("title",
+																	article.getTitle())
+															.append("titleUrl",
+																	article.getTitleUrl())
+															.append("content",
+																	article.getContent())
+															.append("publisher",
+																	article.getPublisher())
+															.append("publishedDate",
+																	article.getPublishedDate())
+															.append("topic",
+																	TOPICSDes[i])
+															.append("ned",
+																	NED[i])
+															.append("engineSource",
+																	article.getEngineSource())
+															.append("collectionDate",
+																	article.getCollectionDate())
+															.append("imageUrl",
+																	article.getImageUrl()));
 
-							List<WebElement> showMore = driver.findElements(By
-									.xpath(showMoreXpath));
-							if (!showMore.isEmpty()) {
-								System.out
-										.println("Getting more than one page");
-								showMore.get(0).click();
-								try {
-									Thread.sleep(10000);
-								} catch (InterruptedException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+								} else {
+									System.err
+											.println("Doc is already in the database");
 								}
 							} else {
-								break;
-							}
-						}
-						Article article = getArticle(td);
-						if (article != null) {
-							FindIterable<Document> iterable = database
-									.getCollection(collectionName).find(
-											new Document("title", article
-													.getTitle()).append(
-													"content",
-													article.getContent()));
-							if (iterable.first() == null) {
-								database.getCollection(collectionName)
-										.insertOne(
-												new Document()
-														.append("title",
-																article.getTitle())
-														.append("titleUrl",
-																article.getTitleUrl())
-														.append("content",
-																article.getContent())
-														.append("publisher",
-																article.getPublisher())
-														.append("publishedDate",
-																article.getPublishedDate())
-														.append("topic",
-																TOPICS[i])
-														.append("engineSource",
-																article.getEngineSource())
-														.append("collectionDate",
-																article.getCollectionDate())
-														.append("imageUrl",
-																article.getImageUrl()));
-
-							} else {
 								System.err
-										.println("Doc is already in the database");
+										.println("Error with parsing the article tags");
 							}
-						} else {
-							System.err
-									.println("Error with parsing the article tags");
+						} catch (Exception e) {
+							System.err.println("Error with " + url);
+							e.printStackTrace();
 						}
-					} catch (Exception e) {
-						System.err.println("Error with " + url);
-						e.printStackTrace();
 					}
 				}
 			}
-
 			System.out.println("Sleeping for " + wholeProcessIsRepeated
 					+ " Hours");
 			System.out.println("Leave me alone (*!*)");
@@ -157,39 +143,36 @@ public class YahooNewsScraper {
 
 		if (!title.isEmpty()) {
 			article.setTitle(title.get(0).getText());
-			article.setTitleUrl(titleUrl.get(0).getAttribute("href"));
+
 		} else {
 			return null;
 		}
-
 		if (!content.isEmpty()) {
 			article.setContent(content.get(0).getText());
 		} else {
 			return null;
 		}
-
 		if (!publisher.isEmpty()) {
 			article.setPublisher(publisher.get(0).getText());
 		} else {
 			article.setPublisher(null);
 		}
 
+		if (!titleUrl.isEmpty()) {
+			article.setTitleUrl(titleUrl.get(0).getAttribute("url"));
+		} else {
+			article.setTitleUrl(null);
+		}
+
 		if (!publishedDate.isEmpty()) {
 			article.setPublishedDate(df.format(fromTimeAgoToDate(publishedDate
-					.get(0).getAttribute("title"))));
+					.get(0).getText())));
 		} else {
 			article.setPublishedDate(null);
 		}
-		if (!imageUrl.isEmpty()) {
-			try {
-				String a = imageUrl.get(0).getAttribute("style");
-				String cleanUrl = a.substring(a.lastIndexOf("--/") + 3,
-						a.lastIndexOf("\");"));
 
-				article.setImageUrl(cleanUrl);
-			} catch (Exception e) {
-				article.setImageUrl(null);
-			}
+		if (!imageUrl.isEmpty()) {
+			article.setImageUrl(imageUrl.get(0).getAttribute("src"));
 		} else {
 			article.setImageUrl(null);
 		}
@@ -202,17 +185,6 @@ public class YahooNewsScraper {
 	}
 
 	public static Date fromTimeAgoToDate(String timeAgo) {
-		Date convertedDate = null;
-
-		ParsePosition p = new ParsePosition(0);
-		convertedDate = yahooDateStyle.parse(timeAgo, p);
-
-		return convertedDate;
-
-	}
-
-	// Won't be used for now
-	public static Date fromTimeAgoToDateOld(String timeAgo) {
 		Date convertedDate = null;
 		if (timeAgo.contains("ago")) {
 			Pattern patter = Pattern.compile("([0-9]+) ([a-zA-Z]+) ago");
@@ -232,7 +204,7 @@ public class YahooNewsScraper {
 				if (timeUnit.contains("second")) {
 					cal.add(Calendar.SECOND, Integer.valueOf("-" + timeNumber));
 					convertedDate = cal.getTime();
-				} else if (timeUnit.contains("min")) {
+				} else if (timeUnit.contains("minute")) {
 					cal.add(Calendar.MINUTE, Integer.valueOf("-" + timeNumber));
 					convertedDate = cal.getTime();
 
@@ -264,11 +236,10 @@ public class YahooNewsScraper {
 		} else {
 
 			ParsePosition p = new ParsePosition(0);
-			convertedDate = yahooDateStyle.parse(timeAgo, p);
+			convertedDate = googleDateStyle.parse(timeAgo, p);
 
 		}
 		return convertedDate;
 
 	}
-
 }

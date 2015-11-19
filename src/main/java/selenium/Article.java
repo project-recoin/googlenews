@@ -8,6 +8,15 @@ public class Article {
 	private String title;
 	private String collectionDate;
 	private String engineSource;
+	private String imageUrl;
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
 
 	public String getCollectionDate() {
 		return collectionDate;
@@ -64,5 +73,7 @@ public class Article {
 	public void setPublishedDate(String publishedDate) {
 		this.publishedDate = publishedDate;
 	}
+	
+	
 
 }
