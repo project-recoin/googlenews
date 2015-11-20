@@ -29,45 +29,58 @@ public class RSScollector {
 
 	public static void main(String[] args) {
 		Scanner s;
+		ArrayList<String> list = null;
 		try {
 			s = new Scanner(new File(args[0]));
-			ArrayList<String> list = new ArrayList<String>();
+			list = new ArrayList<String>();
 			while (s.hasNext()) {
 				list.add(s.next());
 			}
 			s.close();
 
-			for (int i = 0; i < list.size(); i++) {
-				System.out.println("Processing " + list.get(i));
-				Feed feed = getFeed(list.get(i));
-				if (feed != null) {
-					for (FeedMessage message : feed.getMessages()) {
-						Article article = new Article();
-						article.setTitle(message.getTitle());
-						article.setContent(message.getDescription());
-						article.setPublisher(feed.getTitle());
-						Date date;
-						try {
-							date = formatter.parse(message.getPubDate());
-							article.setPublishedDate(df.format(date));
-						} catch (ParseException e) {
-							continue;
-						}
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
-						article.setTitleUrl(message.getLink());
-						article.setImageUrl(message.getThumbnil());
-						article.setEngineSource(engineSource);
-						Date currentDate = new Date();
-						article.setCollectionDate(df.format(currentDate));
-						article.setLanguage(feed.getLanguage());
-						article.setRssUrl(list.get(i));
-						insertArticleIntoMongoDB(article);
+		while (true) {
+			try {
+				for (int i = 0; i < list.size(); i++) {
+					System.out.println("Processing " + list.get(i));
+					Feed feed = getFeed(list.get(i));
+					if (feed != null) {
+						for (FeedMessage message : feed.getMessages()) {
+							Article article = new Article();
+							article.setTitle(message.getTitle());
+							article.setContent(message.getDescription());
+							article.setPublisher(feed.getTitle());
+							Date date;
+							try {
+								date = formatter.parse(message.getPubDate());
+								article.setPublishedDate(df.format(date));
+							} catch (ParseException e) {
+								continue;
+							}
+
+							article.setTitleUrl(message.getLink());
+							article.setImageUrl(message.getThumbnil());
+							article.setEngineSource(engineSource);
+							Date currentDate = new Date();
+							article.setCollectionDate(df.format(currentDate));
+							article.setLanguage(feed.getLanguage());
+							article.setRssUrl(list.get(i));
+							insertArticleIntoMongoDB(article);
+						}
 					}
 				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			Date date = new Date();
+			System.out.println(df.format(date));
+			System.out.println("Finished Another run :)");
 		}
 
 	}
