@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.XMLEvent;
+import javax.xml.stream.events.Attribute;
 
 public class RSSFeedParser {
 	static final String TITLE = "title";
@@ -22,6 +24,8 @@ public class RSSFeedParser {
 	static final String ITEM = "item";
 	static final String PUB_DATE = "pubDate";
 	static final String GUID = "guid";
+	static final String IMAGE = "image";
+	static final String THUMBNIL = "thumbnail";
 
 	final URL url;
 
@@ -40,6 +44,8 @@ public class RSSFeedParser {
 			// Set header values intial to the empty string
 			String description = "";
 			String title = "";
+			String image = "";
+			String thumbnil = "";
 			String link = "";
 			String language = "";
 			String copyright = "";
@@ -70,6 +76,27 @@ public class RSSFeedParser {
 					case TITLE:
 						title = getCharacterData(event, eventReader);
 						break;
+					case IMAGE:
+						event.asStartElement().getAttributes();
+						Iterator<Attribute> imgAttr = event.asStartElement()
+								.getAttributes();
+						while (imgAttr.hasNext()) {
+							Attribute myAttribute = imgAttr.next();
+							if (myAttribute.getName().toString().equals("url")) {
+								image = myAttribute.getValue();
+							}
+						}
+						break;
+					case THUMBNIL:
+						Iterator<Attribute> attribue = event.asStartElement()
+								.getAttributes();
+						while (attribue.hasNext()) {
+							Attribute myAttribute = attribue.next();
+							if (myAttribute.getName().toString().equals("url")) {
+								thumbnil = myAttribute.getValue();
+							}
+						}
+						break;
 					case DESCRIPTION:
 						description = getCharacterData(event, eventReader);
 						break;
@@ -98,16 +125,20 @@ public class RSSFeedParser {
 						message.setAuthor(author);
 						message.setDescription(description);
 						message.setGuid(guid);
+						message.setImage(image);
+						message.setThumbnil(thumbnil);
 						message.setLink(link);
 						message.setTitle(title);
+						message.setPubDate(pubdate);
 						feed.getMessages().add(message);
 						event = eventReader.nextEvent();
+						thumbnil = "";
 						continue;
 					}
 				}
 			}
 		} catch (XMLStreamException e) {
-			return null;
+			throw new RuntimeException(e);
 		}
 		return feed;
 	}
@@ -126,7 +157,7 @@ public class RSSFeedParser {
 		try {
 			return url.openStream();
 		} catch (IOException e) {
-			return null;
+			throw new RuntimeException(e);
 		}
 	}
 }

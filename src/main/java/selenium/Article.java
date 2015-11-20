@@ -9,6 +9,24 @@ public class Article {
 	private String collectionDate;
 	private String engineSource;
 	private String imageUrl;
+	private String language;
+	private String rssUrl;
+
+	public String getRssUrl() {
+		return rssUrl;
+	}
+
+	public void setRssUrl(String rssUrl) {
+		this.rssUrl = rssUrl;
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
+	}
 
 	public String getImageUrl() {
 		return imageUrl;
