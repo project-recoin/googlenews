@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
@@ -15,7 +16,7 @@ import com.mongodb.client.MongoDatabase;
 import selenium.Article;
 
 class Threading implements Runnable {
-
+	final static Logger logger = Logger.getLogger(Threading.class);
 	static final DateFormat formatter = new SimpleDateFormat(
 			"EEE, dd MMM yyyy HH:mm:ss zzz");
 	static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -27,6 +28,8 @@ class Threading implements Runnable {
 
 	static MongoClient mongoClient = new MongoClient(host, port);
 	static MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+	public static final int wholeProcessIsRepeated = 20; // In Minutes
 
 	private List<String> list;
 
@@ -44,7 +47,7 @@ class Threading implements Runnable {
 				return feed;
 			}
 		} catch (Exception e) {
-			System.err.println("Error parsing " + url);
+			logger.error("Error parsing " + url + "\n" + e);
 			return null;
 		}
 	}
@@ -85,12 +88,15 @@ class Threading implements Runnable {
 				}
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error(e);
+			}
+			logger.info("Sleep for " + wholeProcessIsRepeated + " :)");
+			try {
+				Thread.sleep(wholeProcessIsRepeated * 60 * 1000);
+			} catch (InterruptedException e) {
+				logger.error(e);
 			}
 
-			Date date = new Date();
-			System.out.println(df.format(date));
-			System.out.println("Finished Another run :)");
 		}
 	}
 
@@ -126,14 +132,13 @@ class Threading implements Runnable {
 													article.getRssUrl()));
 
 				} else {
-					System.err.println("Doc is already in the database");
+					logger.error("Doc is already in the database");
 				}
 			} else {
-				System.err.println("Error with parsing the article tags");
+				logger.error("Error with parsing the article tags");
 			}
 		} catch (Exception e) {
-			System.err.println("Error with feed titled " + article.getTitle());
-			e.printStackTrace();
+			logger.error("Error with feed titled " + article.getTitle() + e);
 		}
 	}
 }

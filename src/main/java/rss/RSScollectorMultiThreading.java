@@ -8,8 +8,12 @@ import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.log4j.Logger;
+
 public class RSScollectorMultiThreading {
-	static final int threadNo = 32;
+	final static Logger logger = Logger
+			.getLogger(RSScollectorMultiThreading.class);
+	static final int threadNo = 16;
 
 	public static void main(String[] args) {
 		Scanner s;
@@ -29,20 +33,16 @@ public class RSScollectorMultiThreading {
 				if (i + division > list.size()) {
 					executorService.execute(new Threading(list.subList(i,
 							list.size())));
-
 				} else {
 					executorService
 							.execute(new Threading(list.subList(i, end)));
-
 				}
 
 			}
 
 		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			logger.error(e1);
 		}
-
 	}
 
 	public static void ProcessList(List<String> list) {
