@@ -64,6 +64,8 @@ public class googleNewsApiMongoDBDump {
 
 		File folder = new File(dir);
 
+		logger.info("Processing Dir " + folder.getAbsolutePath());
+
 		File[] listOfFiles = folder.listFiles();
 		// Repeat every some hours!! See end of this block
 		for (int i = 0; i < listOfFiles.length; i++) {
@@ -71,7 +73,7 @@ public class googleNewsApiMongoDBDump {
 			if (listOfFiles[i].isFile()
 					&& listOfFiles[i].getAbsoluteFile().toString()
 							.endsWith("json")) {
-				System.out.println("File " + listOfFiles[i].getName());
+				logger.info("File " + listOfFiles[i].getName());
 				String fileName = listOfFiles[i].getName();
 				String parent = listOfFiles[i].getParentFile().toString();
 
