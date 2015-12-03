@@ -17,8 +17,7 @@ import selenium.Article;
 
 class Threading implements Runnable {
 	final static Logger logger = Logger.getLogger(Threading.class);
-	static final DateFormat formatter = new SimpleDateFormat(
-			"EEE, dd MMM yyyy HH:mm:ss zzz");
+	static final DateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 	static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	static final String host = "localhost";
 	static final int port = 27017;
@@ -103,34 +102,17 @@ class Threading implements Runnable {
 	public static void insertArticleIntoMongoDB(Article article) {
 		try {
 			if (article != null) {
-				FindIterable<Document> iterable = database.getCollection(
-						collectionName).find(
-						new Document("title", article.getTitle()).append(
-								"content", article.getContent()));
+				FindIterable<Document> iterable = database.getCollection(collectionName)
+						.find(new Document("title", article.getTitle()).append("content", article.getContent()));
 				if (iterable.first() == null) {
-					database.getCollection(collectionName)
-							.insertOne(
-									new Document()
-											.append("title", article.getTitle())
-											.append("titleUrl",
-													article.getTitleUrl())
-											.append("content",
-													article.getContent())
-											.append("imageUrl",
-													article.getImageUrl())
-											.append("publisher",
-													article.getPublisher())
-											.append("publishedDate",
-													article.getPublishedDate())
-											.append("language",
-													article.getLanguage())
-											.append("engineSource",
-													article.getEngineSource())
-											.append("collectionDate",
-													article.getCollectionDate())
-											.append("RSSurl",
-													article.getRssUrl()));
-
+					database.getCollection(collectionName).insertOne(new Document().append("title", article.getTitle())
+							.append("titleUrl", article.getTitleUrl()).append("content", article.getContent())
+							.append("imageUrl", article.getImageUrl()).append("publisher", article.getPublisher())
+							.append("publishedDate", article.getPublishedDate())
+							.append("language", article.getLanguage()).append("engineSource", article.getEngineSource())
+							.append("collectionDate", article.getCollectionDate())
+							.append("RSSurl", article.getRssUrl()));
+					logger.info("One Doc is inserted");
 				} else {
 					logger.error("Doc is already in the database");
 				}
