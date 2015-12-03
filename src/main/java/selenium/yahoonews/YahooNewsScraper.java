@@ -99,6 +99,7 @@ public class YahooNewsScraper {
 										.append("engineSource", article.getEngineSource())
 										.append("collectionDate", article.getCollectionDate())
 										.append("imageUrl", article.getImageUrl()));
+								logger.info("One Doc is inserted");
 
 							} else {
 								logger.error("Doc is already in the database");
