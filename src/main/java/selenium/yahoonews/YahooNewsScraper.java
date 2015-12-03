@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -22,10 +23,11 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 
+import main.googleNewsApiMongoDB;
+
 public class YahooNewsScraper {
 	static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	static final DateFormat yahooDateStyle = new SimpleDateFormat(
-			"yyyy-MM-dd'T'hh:mm:ss'Z'");
+	static final DateFormat yahooDateStyle = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'");
 	static final String ArticleXpath = ".//li[@class='list-story']";
 	static final String showMoreXpath = ".//div[@class='inline-show-more']/a[@class='rapid-nf more-link']";
 
@@ -44,15 +46,14 @@ public class YahooNewsScraper {
 
 	public static final int wholeProcessIsRepeated = 1; // In hours
 
-	public static final String[] TOPICS = { "africa", "animals-pets", "asia",
-			"business", "companies", "conservatives", "crime", "culture",
-			"diet-nutrition", "economy", "education", "energy",
-			"entertainment", "environment", "europe", "health", "healthcare",
-			"illnesses-conditions", "industry", "labour", "liberal-democrats",
-			"middle-east", "music", "nature", "oddly-enough", "politics",
-			"reviews", "royal-family", "science", "showbiz", "space", "sports",
-			"stockmarket", "tech", "tv-soap", "uk", "uk-politics", "usa",
-			"usa-politics", "world", "world-politics", "your-money" };
+	public static final String[] TOPICS = { "africa", "animals-pets", "asia", "business", "companies", "conservatives",
+			"crime", "culture", "diet-nutrition", "economy", "education", "energy", "entertainment", "environment",
+			"europe", "health", "healthcare", "illnesses-conditions", "industry", "labour", "liberal-democrats",
+			"middle-east", "music", "nature", "oddly-enough", "politics", "reviews", "royal-family", "science",
+			"showbiz", "space", "sports", "stockmarket", "tech", "tv-soap", "uk", "uk-politics", "usa", "usa-politics",
+			"world", "world-politics", "your-money" };
+
+	final static Logger logger = Logger.getLogger(YahooNewsScraper.class);
 
 	public static void main(String[] args) {
 		MongoClient mongoClient = new MongoClient(host, port);
@@ -63,20 +64,17 @@ public class YahooNewsScraper {
 		FirefoxDriver driver = new FirefoxDriver(fp);
 		while (true) {
 			for (int i = 0; i < TOPICS.length; i++) {
-				System.out.println("Processing the topic " + TOPICS[i]);
+				logger.info("Processing the topic " + TOPICS[i]);
 				String url = "https://uk.news.yahoo.com/" + TOPICS[i] + "/";
 				driver.get(url);
-				List<WebElement> tds = driver.findElements(By
-						.xpath(ArticleXpath));
+				List<WebElement> tds = driver.findElements(By.xpath(ArticleXpath));
 				for (WebElement td : tds) {
 					try {
 						while (true) {
 
-							List<WebElement> showMore = driver.findElements(By
-									.xpath(showMoreXpath));
+							List<WebElement> showMore = driver.findElements(By.xpath(showMoreXpath));
 							if (!showMore.isEmpty()) {
-								System.out
-										.println("Getting more than one page");
+								logger.info("Getting more than one page");
 								showMore.get(0).click();
 								try {
 									Thread.sleep(10000);
@@ -90,53 +88,33 @@ public class YahooNewsScraper {
 						}
 						Article article = getArticle(td);
 						if (article != null) {
-							FindIterable<Document> iterable = database
-									.getCollection(collectionName).find(
-											new Document("title", article
-													.getTitle()).append(
-													"content",
-													article.getContent()));
+							FindIterable<Document> iterable = database.getCollection(collectionName).find(
+									new Document("title", article.getTitle()).append("content", article.getContent()));
 							if (iterable.first() == null) {
-								database.getCollection(collectionName)
-										.insertOne(
-												new Document()
-														.append("title",
-																article.getTitle())
-														.append("titleUrl",
-																article.getTitleUrl())
-														.append("content",
-																article.getContent())
-														.append("publisher",
-																article.getPublisher())
-														.append("publishedDate",
-																article.getPublishedDate())
-														.append("topic",
-																TOPICS[i])
-														.append("engineSource",
-																article.getEngineSource())
-														.append("collectionDate",
-																article.getCollectionDate())
-														.append("imageUrl",
-																article.getImageUrl()));
+								database.getCollection(collectionName).insertOne(new Document()
+										.append("title", article.getTitle()).append("titleUrl", article.getTitleUrl())
+										.append("content", article.getContent())
+										.append("publisher", article.getPublisher())
+										.append("publishedDate", article.getPublishedDate()).append("topic", TOPICS[i])
+										.append("engineSource", article.getEngineSource())
+										.append("collectionDate", article.getCollectionDate())
+										.append("imageUrl", article.getImageUrl()));
 
 							} else {
-								System.err
-										.println("Doc is already in the database");
+								logger.error("Doc is already in the database");
 							}
 						} else {
-							System.err
-									.println("Error with parsing the article tags");
+							logger.error("Error with parsing the article tags");
 						}
 					} catch (Exception e) {
-						System.err.println("Error with " + url);
+						logger.error("Error with " + url);
 						e.printStackTrace();
 					}
 				}
 			}
 
-			System.out.println("Sleeping for " + wholeProcessIsRepeated
-					+ " Hours");
-			System.out.println("Leave me alone (*!*)");
+			logger.info("Sleeping for " + wholeProcessIsRepeated + " Hours");
+			logger.info("Leave me alone (*!*)");
 			try {
 				Thread.sleep(wholeProcessIsRepeated * 60 * 60 * 1000);
 			} catch (InterruptedException e) {
@@ -151,8 +129,7 @@ public class YahooNewsScraper {
 		List<WebElement> titleUrl = td.findElements(By.xpath(titleUrlXpath));
 		List<WebElement> content = td.findElements(By.xpath(contentXpath));
 		List<WebElement> publisher = td.findElements(By.xpath(publisherXpath));
-		List<WebElement> publishedDate = td.findElements(By
-				.xpath(publishedDateXpath));
+		List<WebElement> publishedDate = td.findElements(By.xpath(publishedDateXpath));
 		List<WebElement> imageUrl = td.findElements(By.xpath(imageUrlXpath));
 
 		if (!title.isEmpty()) {
@@ -175,16 +152,14 @@ public class YahooNewsScraper {
 		}
 
 		if (!publishedDate.isEmpty()) {
-			article.setPublishedDate(df.format(fromTimeAgoToDate(publishedDate
-					.get(0).getAttribute("title"))));
+			article.setPublishedDate(df.format(fromTimeAgoToDate(publishedDate.get(0).getAttribute("title"))));
 		} else {
 			article.setPublishedDate(null);
 		}
 		if (!imageUrl.isEmpty()) {
 			try {
 				String a = imageUrl.get(0).getAttribute("style");
-				String cleanUrl = a.substring(a.lastIndexOf("--/") + 3,
-						a.lastIndexOf("\");"));
+				String cleanUrl = a.substring(a.lastIndexOf("--/") + 3, a.lastIndexOf("\");"));
 
 				article.setImageUrl(cleanUrl);
 			} catch (Exception e) {
@@ -241,13 +216,11 @@ public class YahooNewsScraper {
 					convertedDate = cal.getTime();
 
 				} else if (timeUnit.contains("day")) {
-					cal.add(Calendar.DAY_OF_MONTH,
-							Integer.valueOf("-" + timeNumber));
+					cal.add(Calendar.DAY_OF_MONTH, Integer.valueOf("-" + timeNumber));
 					convertedDate = cal.getTime();
 
 				} else if (timeUnit.contains("week")) {
-					cal.add(Calendar.WEEK_OF_MONTH,
-							Integer.valueOf("-" + timeNumber));
+					cal.add(Calendar.WEEK_OF_MONTH, Integer.valueOf("-" + timeNumber));
 					convertedDate = cal.getTime();
 
 				} else if (timeUnit.contains("month")) {
