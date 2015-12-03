@@ -79,8 +79,7 @@ public class YahooNewsScraper {
 								try {
 									Thread.sleep(10000);
 								} catch (InterruptedException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+									logger.error(e);
 								}
 							} else {
 								break;
@@ -109,7 +108,7 @@ public class YahooNewsScraper {
 						}
 					} catch (Exception e) {
 						logger.error("Error with " + url);
-						e.printStackTrace();
+						logger.error(e);
 					}
 				}
 			}
@@ -119,7 +118,7 @@ public class YahooNewsScraper {
 			try {
 				Thread.sleep(wholeProcessIsRepeated * 60 * 60 * 1000);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				logger.error(e);
 			}
 		}
 	}
