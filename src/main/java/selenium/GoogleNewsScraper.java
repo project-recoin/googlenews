@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -22,8 +23,7 @@ import com.mongodb.client.MongoDatabase;
 
 public class GoogleNewsScraper {
 	static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	static final DateFormat googleDateStyle = new SimpleDateFormat(
-			"MMM dd, yyyy");
+	static final DateFormat googleDateStyle = new SimpleDateFormat("MMM dd, yyyy");
 
 	static final String ArticleXpath = ".//div[@class='esc-default-layout-wrapper esc-expandable-wrapper']/table/tbody/tr";
 
@@ -43,15 +43,13 @@ public class GoogleNewsScraper {
 
 	public static final int wholeProcessIsRepeated = 1; // In hours
 
-	public static final String[] TOPICS = { "h", "w", "b", "n", "t", "el", "p",
-			"e", "s", "m" };
-	public static final String[] TOPICSDes = { "headlines", "world",
-			"business", "nation", "technology", "elections", "politics",
-			"entertainment", "sports", "health" };
-	public static final String[] NED = { "uk", "au", "in", "en_il", "en_my",
-			"nz", "en_pk", "en_ph", "en_sg", "en_bw", "en_et", "en_gh",
-			"en_ie", "en_ke", "en_na", "en_ng", "en_za", "en_tz", "en_ug",
-			"en_zw", "ca", "us" };
+	public static final String[] TOPICS = { "h", "w", "b", "n", "t", "el", "p", "e", "s", "m" };
+	public static final String[] TOPICSDes = { "headlines", "world", "business", "nation", "technology", "elections",
+			"politics", "entertainment", "sports", "health" };
+	public static final String[] NED = { "uk", "au", "in", "en_il", "en_my", "nz", "en_pk", "en_ph", "en_sg", "en_bw",
+			"en_et", "en_gh", "en_ie", "en_ke", "en_na", "en_ng", "en_za", "en_tz", "en_ug", "en_zw", "ca", "us" };
+
+	final static Logger logger = Logger.getLogger(GoogleNewsScraper.class);
 
 	public static void main(String[] args) {
 		MongoClient mongoClient = new MongoClient(host, port);
@@ -62,71 +60,50 @@ public class GoogleNewsScraper {
 		FirefoxDriver driver = new FirefoxDriver(fp);
 		while (true) {
 			for (int j = 0; j < NED.length; j++) {
-				System.out.println("Processing the language " + NED[j]);
+				logger.info("Processing the language " + NED[j]);
 				for (int i = 0; i < TOPICS.length; i++) {
-					System.out.println("Processing the topic " + TOPICS[i]);
-					String url = "http://news.google.com/news/section?cf=all&ned="
-							+ NED[j] + "&topic=" + TOPICS[i];
+					logger.info("Processing the topic " + TOPICS[i]);
+					String url = "http://news.google.com/news/section?cf=all&ned=" + NED[j] + "&topic=" + TOPICS[i];
 					driver.get(url);
-					List<WebElement> tds = driver.findElements(By
-							.xpath(ArticleXpath));
+					List<WebElement> tds = driver.findElements(By.xpath(ArticleXpath));
 					for (WebElement td : tds) {
 						try {
 							Article article = getArticle(td);
 							if (article != null) {
-								FindIterable<Document> iterable = database
-										.getCollection(collectionName).find(
-												new Document("title", article
-														.getTitle()).append(
-														"content",
-														article.getContent()));
+								FindIterable<Document> iterable = database.getCollection(collectionName)
+										.find(new Document("title", article.getTitle()).append("content",
+												article.getContent()));
 								if (iterable.first() == null) {
 									database.getCollection(collectionName)
-											.insertOne(
-													new Document()
-															.append("title",
-																	article.getTitle())
-															.append("titleUrl",
-																	article.getTitleUrl())
-															.append("content",
-																	article.getContent())
-															.append("publisher",
-																	article.getPublisher())
-															.append("publishedDate",
-																	article.getPublishedDate())
-															.append("topic",
-																	TOPICSDes[i])
-															.append("ned",
-																	NED[i])
-															.append("engineSource",
-																	article.getEngineSource())
-															.append("collectionDate",
-																	article.getCollectionDate())
-															.append("imageUrl",
-																	article.getImageUrl()));
-
+											.insertOne(new Document().append("title", article.getTitle())
+													.append("titleUrl", article.getTitleUrl())
+													.append("content", article.getContent())
+													.append("publisher", article.getPublisher())
+													.append("publishedDate", article.getPublishedDate())
+													.append("topic", TOPICSDes[i]).append("ned", NED[i])
+													.append("engineSource", article.getEngineSource())
+													.append("collectionDate", article.getCollectionDate())
+													.append("imageUrl", article.getImageUrl()));
+									logger.info("One Doc is inserted");
 								} else {
-									System.err
-											.println("Doc is already in the database");
+									logger.error("Doc is already in the database");
 								}
 							} else {
-								System.err
-										.println("Error with parsing the article tags");
+								logger.error("Error with parsing the article tags");
 							}
 						} catch (Exception e) {
-							System.err.println("Error with " + url);
-							e.printStackTrace();
+							logger.error("Error with " + url);
+							logger.error(e);
 						}
 					}
 				}
 			}
-			System.out.println("Sleeping for " + wholeProcessIsRepeated
-					+ " Hours");
-			System.out.println("Leave me alone (*!*)");
+			logger.info("Sleeping for " + wholeProcessIsRepeated + " Hours");
+			logger.info("Leave me alone (*!*)");
 			try {
 				Thread.sleep(wholeProcessIsRepeated * 60 * 60 * 1000);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				logger.error(e);
 			}
 		}
 	}
@@ -137,8 +114,7 @@ public class GoogleNewsScraper {
 		List<WebElement> titleUrl = td.findElements(By.xpath(titleUrlXpath));
 		List<WebElement> content = td.findElements(By.xpath(contentXpath));
 		List<WebElement> publisher = td.findElements(By.xpath(publisherXpath));
-		List<WebElement> publishedDate = td.findElements(By
-				.xpath(publishedDateXpath));
+		List<WebElement> publishedDate = td.findElements(By.xpath(publishedDateXpath));
 		List<WebElement> imageUrl = td.findElements(By.xpath(imageUrlXpath));
 
 		if (!title.isEmpty()) {
@@ -165,8 +141,7 @@ public class GoogleNewsScraper {
 		}
 
 		if (!publishedDate.isEmpty()) {
-			article.setPublishedDate(df.format(fromTimeAgoToDate(publishedDate
-					.get(0).getText())));
+			article.setPublishedDate(df.format(fromTimeAgoToDate(publishedDate.get(0).getText())));
 		} else {
 			article.setPublishedDate(null);
 		}
@@ -213,13 +188,11 @@ public class GoogleNewsScraper {
 					convertedDate = cal.getTime();
 
 				} else if (timeUnit.contains("day")) {
-					cal.add(Calendar.DAY_OF_MONTH,
-							Integer.valueOf("-" + timeNumber));
+					cal.add(Calendar.DAY_OF_MONTH, Integer.valueOf("-" + timeNumber));
 					convertedDate = cal.getTime();
 
 				} else if (timeUnit.contains("week")) {
-					cal.add(Calendar.WEEK_OF_MONTH,
-							Integer.valueOf("-" + timeNumber));
+					cal.add(Calendar.WEEK_OF_MONTH, Integer.valueOf("-" + timeNumber));
 					convertedDate = cal.getTime();
 
 				} else if (timeUnit.contains("month")) {

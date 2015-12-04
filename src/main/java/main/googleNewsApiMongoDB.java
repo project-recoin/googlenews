@@ -292,7 +292,8 @@ public class googleNewsApiMongoDB {
 													article.getCollectionDate())
 											.append("topic", topic)
 											.append("ned", ned));
-
+					logger.info("One Doc is inserted");
+					
 				} else {
 					logger.error("Doc is already in the database");
 				}
