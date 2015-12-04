@@ -41,7 +41,10 @@ The main classes in this project are:
   - rss.RSScollectorMultiThreading (RSS collector)
 
 To compile each of them, you have to:
-  - Modify the pom file to your desired class: <mainClass>main.googleNewsApiMongoDB</mainClass>
+  - Modify the pom file to your desired class: 
+```xml
+<mainClass>main.googleNewsApiMongoDB</mainClass>
+```
   - compile the code with: mvn clean compile assembly:single
   - Run the jar file with: 
 ```sh
