@@ -15,7 +15,7 @@ import com.mongodb.client.MongoDatabase;
 
 import dataObject.article.Article;
 
-class Threading implements Runnable {
+public class Threading implements Runnable {
 	final static Logger logger = Logger.getLogger(Threading.class);
 	static final DateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 	static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
