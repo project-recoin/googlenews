@@ -69,6 +69,8 @@ public class googleNewsApiMongoDB {
 	static final DateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 	static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+	static boolean everInsertedDocs = false;
+
 	public static void usage() {
 		System.out.println("The program accepts only one arg which is the IP address");
 		System.out.println("java IP address");
@@ -81,6 +83,8 @@ public class googleNewsApiMongoDB {
 			System.exit(-1);
 		}
 		userip = args[0];
+
+		logger.info("Starting the script");
 
 		StringBuilder urlWithIntialParams = new StringBuilder();
 		urlWithIntialParams.append(endPoint);
@@ -102,6 +106,11 @@ public class googleNewsApiMongoDB {
 					for (int i = 0; i < TOPICS.length; i++) {
 						String urlWithTopicParam = urlWithCountryParam + "&topic=" + TOPICS[i];
 						// loop throguh the 8 pages
+
+						// the below two lines are for exiting the rest of the
+						// pages if docs are already in the database
+						int counterForExitingPages = 0;
+						everInsertedDocs = false;
 						for (int j = 0; j < Start * ResultLimit; j += ResultLimit) {
 							String urlWithPageParam = urlWithTopicParam + "&start=" + j;
 							// inner counter level
@@ -159,6 +168,14 @@ public class googleNewsApiMongoDB {
 									logger.info("IP is changed to " + urlWithPageParam);
 
 								}
+							}
+
+							if (everInsertedDocs == false) {
+								counterForExitingPages++;
+							}
+							if (counterForExitingPages > 3) {
+								logger.error("Breaking the pages as three pages are already in the database");
+								break;
 							}
 
 						}
@@ -264,8 +281,9 @@ public class googleNewsApiMongoDB {
 							.append("collectionDate", article.getCollectionDate()).append("topic", topic)
 							.append("ned", ned));
 					logger.info("One Doc is inserted");
-
+					everInsertedDocs = true;
 				} else {
+
 					logger.error("Doc is already in the database");
 				}
 			} else {
