@@ -154,6 +154,9 @@ public class googleNewsApiMongoDB {
 											+ ((j / 8) + 1));
 									counterToExitLoop++;
 									Thread.sleep(300000);
+									logger.info("Changing the IP address");
+									urlWithPageParam = changeIP(urlWithPageParam);
+									logger.info("IP is changed to " + urlWithPageParam);
 
 								}
 							}
