@@ -177,7 +177,7 @@ public class googleNewsApiMongoDB {
 							} else {
 								counterForExitingPages = 0;
 							}
-							if (counterForExitingPages > 3) {
+							if (counterForExitingPages > 2) {
 								logger.error("Breaking the pages as three pages are already in the database");
 								break;
 							}
