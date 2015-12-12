@@ -36,9 +36,9 @@ Make sure you have firefox for sellinum.
 
 The main classes in this project are:
   - main.googleNewsApiMongoDB (Googlenews API) (Note: it looks that the API is offically closed!)
-  - selenium.GoogleNewsScraper (Googlenews Website)
-  - selenium.yahoonews.YahooNewsScraper (Yahoonews Website)
-  - rss.RSScollectorMultiThreading (RSS collector)
+  - main.GoogleNewsScraper (Googlenews Website)
+  - main.yahoonews.YahooNewsScraper (Yahoonews Website)
+  - main.RSScollectorMultiThreading (RSS collector)
 
 To compile each of them, you have to:
   - Modify the pom file to your desired class: 
