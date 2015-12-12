@@ -35,9 +35,9 @@ You also need to run a mongoDB ("localhost", "27017").
 Make sure you have firefox for sellinum.
 
 The main classes in this project are:
-  - main.googleNewsApiMongoDB (Googlenews API) (Note: it looks that the API is offically closed!)
+  - main.googleNewsApiMongoDB (Googlenews API)
   - main.GoogleNewsScraper (Googlenews Website)
-  - main.yahoonews.YahooNewsScraper (Yahoonews Website)
+  - main.YahooNewsScraper (Yahoonews Website)
   - main.RSScollectorMultiThreading (RSS collector)
 
 To compile each of them, you have to:
@@ -71,7 +71,7 @@ Note: each class has a number of static parameters that you have to make sure th
 	"ned" : "uk"
 }
 ```
-#### selenium.GoogleNewsScraper
+#### main.GoogleNewsScraper
 ```json
 {
 	"_id" : ObjectId("56492b9a05da27d33d938ced"),
@@ -84,7 +84,7 @@ Note: each class has a number of static parameters that you have to make sure th
 	"NED" : "uk"
 }
 ```
-#### selenium.yahoonews.YahooNewsScraper
+#### main.YahooNewsScraper
 ```json
 {
 	"_id" : ObjectId("564b695d05da270181fa36a4"),
@@ -98,7 +98,7 @@ Note: each class has a number of static parameters that you have to make sure th
 	"collectionDate" : "2015-11-17 17:52:29"
 }
 ```
-#### rss.RSScollectorMultiThreading
+#### main.RSScollectorMultiThreading
 ```json
 {
 	"_id" : ObjectId("564e8c1f05da27b9f7cb32db"),
