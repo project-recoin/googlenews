@@ -110,7 +110,6 @@ public class googleNewsApiMongoDB {
 						// the below two lines are for exiting the rest of the
 						// pages if docs are already in the database
 						int counterForExitingPages = 0;
-						everInsertedDocs = false;
 						for (int j = 0; j < Start * ResultLimit; j += ResultLimit) {
 							String urlWithPageParam = urlWithTopicParam + "&start=" + j;
 							// inner counter level
@@ -136,6 +135,9 @@ public class googleNewsApiMongoDB {
 										System.exit(1);
 									}
 								}
+
+								everInsertedDocs = false;
+
 								// time between reqests is randomised between
 								// max and min time
 								Random rn = new Random();
